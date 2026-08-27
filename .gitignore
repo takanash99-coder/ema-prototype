@@ -1,0 +1,78 @@
+# Secrets and credentials
+.env
+.env.*
+*.key
+*.pem
+credentials*
+credential*
+secrets*
+secret*
+*.token
+.streamlit/secrets.toml
+
+# Python cache and local environments
+__pycache__/
+**/__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+venv/
+env/
+
+# OS and editor files
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+.vscode/
+.idea/
+
+# Streamlit/local cache
+.streamlit/cache/
+.streamlit/runtime/
+
+# Research media and generated media
+*.mp4
+*.mov
+*.mts
+*.MTS
+*.avi
+*.mkv
+*.webm
+*.MOV
+*.MP4
+
+# Research/analysis data
+*.csv
+*.tsv
+*.xlsx
+*.xls
+*.jsonl
+RawData/
+01_RawData/
+EMA_Master*.xlsx
+Subject_Master*.xlsx
+F:/EMA_Data/
+Analysis/
+Legend_Analysis/
+Results/
+Pose_Data/
+Thumbnails/
+Logs/
+Reports/
+Marked_Videos/
+
+# Local model assets: review license/distribution before committing
+assets/*.task
+
+# Temporary files
+*.tmp
+*.temp
+streamlit_*.pid
+.ema_unavailable/
+local_outputs/
+*_pose_*.json
+*_ui_summary.json
