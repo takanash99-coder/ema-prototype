@@ -16,7 +16,7 @@ from result_writer import write_log
 
 st.set_page_config(page_title="EMA", layout="centered")
 
-DEMO_CAMERA_GUIDE_IMAGE = ASSETS_DIR / "demo_camera_guide.png"
+DEMO_CAMERA_GUIDE_IMAGE = ASSETS_DIR / "demo_camera_guide_2.png"
 DEMO_MARKING_RESULT_IMAGE = ASSETS_DIR / "demo_marking_result.png"
 
 MARKER_LABELS = {
@@ -47,7 +47,7 @@ T = {
     "sample": "\u30b5\u30f3\u30d7\u30eb\u52d5\u753b\u3067\u8a66\u3059",
     "select": "\u52d5\u753b\u3092\u9078\u629e",
     "shoot_analyze": "\U0001F4F7 \u64ae\u5f71\u3057\u3066\u89e3\u6790",
-    "upload_analyze": "\U0001F4C1 \u52d5\u753b\u3092\u9078\u629e",
+    "upload_analyze": "\U0001F4C1 \u52d5\u753b\u304b\u3089\u89e3\u6790",
     "marking_result": "\u30de\u30fc\u30ad\u30f3\u30b0\u7d50\u679c",
     "loading": "\u89e3\u6790\u6e08\u307f\u30c7\u30fc\u30bf\u3092\u8aad\u307f\u8fbc\u307f\u4e2d",
     "start_marking": "\u30de\u30fc\u30ad\u30f3\u30b0\u958b\u59cb",
@@ -57,6 +57,9 @@ T = {
     "developing": "\u958b\u767a\u4e2d\u3067\u3059",
     "usage_title": "\u4f7f\u7528\u65b9\u6cd5",
     "analysis_title": "\u52d5\u4f5c\u89e3\u6790",
+    "history": "\u89e3\u6790\u5c65\u6b74",
+    "history_sub": "\u904e\u53bb\u306e\u89e3\u6790\u7d50\u679c\u3092\u78ba\u8a8d\u3059\u308b",
+    "recording_title": "\u52d5\u753b\u64ae\u5f71",
     "status": "\u30de\u30fc\u30ad\u30f3\u30b0\u72b6\u614b",
 }
 
@@ -77,8 +80,7 @@ header[data-testid="stHeader"], [data-testid="stToolbar"], [data-testid="stDecor
 .ema-rate-row strong {font-size:20px; color:#0b66c3;}
 .ema-note {font-size:13px; color:#6c7d8f; text-align:center; margin-top:12px;}
 .ema-path {font-family:Consolas,monospace; font-size:12px; color:#52677e; word-break:break-all;}
-.ema-home-actions {max-width:680px; margin:0 auto;}
-.ema-secondary-grid {display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-top:14px;}
+.ema-purpose {max-width:620px; margin:0 auto 24px; text-align:center; font-size:20px; line-height:1.7; font-weight:850; color:#1b385b;}
 .ema-image-frame {background:#fff; border:1px solid rgba(18,104,216,.12); border-radius:24px; box-shadow:0 18px 36px rgba(31,86,141,.12); padding:12px; margin:12px auto 18px;}
 .ema-image-frame img {display:block; width:100%; height:auto; border-radius:18px;}
 .ema-demo-tag {display:inline-block; font-size:12px; font-weight:900; letter-spacing:.08em; color:#0b66c3; background:#eaf5ff; border:1px solid #cce8ff; border-radius:999px; padding:5px 12px; margin:0 auto 10px;}
@@ -86,15 +88,21 @@ header[data-testid="stHeader"], [data-testid="stToolbar"], [data-testid="stDecor
 .stButton>button {width:100%; min-height:64px; border-radius:20px; font-size:20px; font-weight:900; border:1px solid rgba(18,104,216,.15); white-space:pre-line; box-shadow:0 14px 28px rgba(31,86,141,.10);}
 .stButton>button[kind="primary"] {background:linear-gradient(135deg,#20b8ef,#1268d8); border:0; color:#fff;}
 .stButton>button[kind="secondary"] {background:#fff; color:#15304f;}
-.st-key-home_analyze button {min-height:96px!important; font-size:26px!important; border-radius:26px!important;}
+.st-key-home_analyze button, .st-key-home_review button, .st-key-home_recording button,
+.st-key-shoot_analyze button, .st-key-upload_analyze button, .st-key-analysis_history button {min-height:92px!important; font-size:22px!important; border-radius:24px!important;}
+.st-key-home_analyze button {min-height:104px!important; font-size:24px!important;}
 .st-key-home_help button {min-height:38px!important; font-size:14px!important; box-shadow:none!important; border:0!important; background:transparent!important; color:#6c7d8f!important;}
 .st-key-shutter_button button {width:96px!important; height:96px!important; min-height:96px!important; border-radius:999px!important; margin:6px auto 0!important; font-size:46px!important; line-height:1!important; display:block!important; box-shadow:0 18px 34px rgba(18,104,216,.22)!important;}
+.st-key-motion_rec_start button {width:138px!important; height:138px!important; min-height:138px!important; border-radius:999px!important; margin:10px auto 18px!important; font-size:25px!important; line-height:1.15!important; display:block!important; background:linear-gradient(135deg,#ef4444,#b91c1c)!important;}
+.st-key-motion_recording_home button, .st-key-result_home button {box-shadow:none!important;}
 div[data-testid="stFileUploader"] section {border-radius:18px; border-color:#cde3fb; background:#fff;}
 @media (max-width: 620px) {
   [data-testid="stMainBlockContainer"], .block-container {padding:14px 14px 28px!important;}
   .ema-logo{font-size:54px}.ema-page-title{font-size:29px}.stButton>button{font-size:18px; min-height:60px;}
-  .ema-secondary-grid {grid-template-columns:1fr;}
-  .st-key-home_analyze button {min-height:84px!important; font-size:22px!important;}
+  .ema-purpose{font-size:17px; line-height:1.65; margin-bottom:18px;}
+  .st-key-home_analyze button, .st-key-home_review button, .st-key-home_recording button,
+  .st-key-shoot_analyze button, .st-key-upload_analyze button, .st-key-analysis_history button {min-height:82px!important; font-size:19px!important;}
+  .st-key-motion_rec_start button {width:120px!important; height:120px!important; min-height:120px!important;}
 }
 </style>
 """, unsafe_allow_html=True)
@@ -247,15 +255,13 @@ screen = st.session_state.screen
 
 if screen == "home":
     brand()
-    if st.button(f'{T["analyze"]}\n{T["analyze_ja"]}', key="home_analyze", type="primary"):
+    st.markdown('<div class="ema-purpose">気管挿管の動作を可視化し、<br>熟練者の動きから学ぶモーションコーチングAI</div>', unsafe_allow_html=True)
+    if st.button(f'{T["analyze"]}\n{T["analyze_ja"]}\n撮影した動作をAIで解析', key="home_analyze", type="primary"):
         goto("analyze")
-    col1, col2 = st.columns(2)
-    with col1:
-        if st.button(f'{T["review"]}\n{T["review_ja"]}', key="home_review"):
-            goto("review")
-    with col2:
-        if st.button(f'{T["recording"]}\n{T["recording_ja"]}', key="home_recording"):
-            goto("recording")
+    if st.button(f'{T["review"]}\n{T["review_ja"]}\n解析結果・コーチングを確認', key="home_review"):
+        goto("review")
+    if st.button(f'{T["recording"]}\n{T["recording_ja"]}\n技能データを記録', key="home_recording"):
+        goto("recording")
     if st.button(T["help"], key="home_help"):
         goto("usage")
 
@@ -278,13 +284,12 @@ Reviewでは過去の解析結果を確認します。Recordingは研究・教�
 elif screen == "analyze":
     back_button("home")
     page_title(T["analysis_title"], "Analyze")
-    if st.button(T["shoot_analyze"], key="shoot_analyze", type="primary"):
+    if st.button(f'{T["shoot_analyze"]}\nその場で撮影して解析する', key="shoot_analyze", type="primary"):
         goto("camera_guide")
-    if st.button(T["upload_analyze"], key="upload_analyze"):
+    if st.button(f'{T["upload_analyze"]}\n保存済みの動画を使用する', key="upload_analyze"):
         goto("upload_analyze")
-    with st.expander("Local sample"):
-        if st.button(T["sample"], key="sample_button"):
-            goto("sample_loading")
+    if st.button(f'{T["history"]}\n{T["history_sub"]}', key="analysis_history"):
+        goto("review")
 
 elif screen == "camera_guide":
     back_button("analyze")
@@ -306,13 +311,21 @@ elif screen == "demo_result":
     page_title("解析結果", "Analysis Result")
     st.markdown('<div class="ema-center"><span class="ema-demo-tag">DEMO</span></div>', unsafe_allow_html=True)
     show_demo_image(DEMO_MARKING_RESULT_IMAGE, "Demo marking result")
-    col1, col2 = st.columns(2)
-    with col1:
-        if st.button("もう一度撮影", key="shoot_again", type="primary"):
-            goto("camera_guide")
-    with col2:
-        if st.button("ホームへ戻る", key="result_home"):
-            goto("home")
+    if st.button("\U0001F3A5 動画撮影へ", key="to_motion_recording", type="primary"):
+        goto("motion_recording")
+    if st.button("\U0001F4F7 もう一度撮影", key="shoot_again"):
+        goto("camera_guide")
+    if st.button("\U0001F3E0 ホームへ", key="result_home"):
+        goto("home")
+
+elif screen == "motion_recording":
+    back_button("demo_result")
+    page_title(T["recording_title"], "Motion Recording")
+    st.markdown('<div class="ema-purpose">撮影位置を変えずに、気管挿管を実施してください</div>', unsafe_allow_html=True)
+    if st.button("● REC\n撮影開始", key="motion_rec_start", type="primary"):
+        st.info("動画撮影機能はPrototypeでは準備中です")
+    if st.button("ホームへ", key="motion_recording_home"):
+        goto("home")
 
 elif screen == "upload_analyze":
     back_button("analyze")
