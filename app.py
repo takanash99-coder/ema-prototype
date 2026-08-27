@@ -1,20 +1,23 @@
-
 from __future__ import annotations
 
 import base64
 import json
 import tempfile
+import time
 from pathlib import Path
 from types import SimpleNamespace
 
 import streamlit as st
 import streamlit.components.v1 as components
 
-from config import MASTER_FILE, RESULTS_DIR, SAMPLE_MARKED_VIDEO, SAMPLE_POSE_JSON, ensure_output_directories
+from config import ASSETS_DIR, MASTER_FILE, RESULTS_DIR, SAMPLE_MARKED_VIDEO, SAMPLE_POSE_JSON, ensure_output_directories
 from master_loader import MasterLoadError, load_master
 from result_writer import write_log
 
 st.set_page_config(page_title="EMA", layout="centered")
+
+DEMO_CAMERA_GUIDE_IMAGE = ASSETS_DIR / "demo_camera_guide.png"
+DEMO_MARKING_RESULT_IMAGE = ASSETS_DIR / "demo_marking_result.png"
 
 MARKER_LABELS = {
     "head": "\u982d\u90e8",
@@ -43,6 +46,8 @@ T = {
     "back": "\u2190 \u623b\u308b",
     "sample": "\u30b5\u30f3\u30d7\u30eb\u52d5\u753b\u3067\u8a66\u3059",
     "select": "\u52d5\u753b\u3092\u9078\u629e",
+    "shoot_analyze": "\U0001F4F7 \u64ae\u5f71\u3057\u3066\u89e3\u6790",
+    "upload_analyze": "\U0001F4C1 \u52d5\u753b\u3092\u9078\u629e",
     "marking_result": "\u30de\u30fc\u30ad\u30f3\u30b0\u7d50\u679c",
     "loading": "\u89e3\u6790\u6e08\u307f\u30c7\u30fc\u30bf\u3092\u8aad\u307f\u8fbc\u307f\u4e2d",
     "start_marking": "\u30de\u30fc\u30ad\u30f3\u30b0\u958b\u59cb",
@@ -58,24 +63,39 @@ T = {
 st.markdown("""
 <style>
 header[data-testid="stHeader"], [data-testid="stToolbar"], [data-testid="stDecoration"], #MainMenu, footer {display:none!important;}
-[data-testid="stMainBlockContainer"], .block-container {padding:18px 16px 34px!important; max-width:780px!important;}
+[data-testid="stMainBlockContainer"], .block-container {padding:18px 18px 34px!important; max-width:860px!important;}
 .stApp {background:linear-gradient(180deg,#f7fbff 0%,#edf6ff 100%); color:#132238;}
-.ema-brand {text-align:center; padding:10px 0 22px;}
-.ema-logo {font-size:64px; line-height:1; font-weight:950; letter-spacing:0; color:#0b66c3; margin:0;}
-.ema-name {font-size:22px; font-weight:850; margin:8px 0 4px; color:#172a46;}
+.ema-brand {text-align:center; padding:12px 0 24px;}
+.ema-logo {font-size:70px; line-height:1; font-weight:950; letter-spacing:0; color:#0b66c3; margin:0;}
+.ema-name {font-size:23px; font-weight:850; margin:8px 0 4px; color:#172a46;}
 .ema-sub {font-size:14px; font-weight:750; color:#64758b; margin:2px 0;}
-.ema-menu-card, .ema-panel {background:#fff; border:1px solid rgba(18,104,216,.12); border-radius:20px; box-shadow:0 16px 34px rgba(31,86,141,.10); margin:14px 0; padding:22px;}
-.ema-menu-card {padding:0; overflow:hidden;}
-.ema-page-title {font-size:34px; font-weight:950; text-align:center; margin:10px 0 18px; color:#10233d;}
+.ema-page-title {font-size:34px; font-weight:950; text-align:center; margin:10px 0 22px; color:#10233d; line-height:1.25;}
+.ema-page-title span {font-size:20px; color:#66788d;}
+.ema-panel {background:#fff; border:1px solid rgba(18,104,216,.12); border-radius:22px; box-shadow:0 16px 34px rgba(31,86,141,.10); margin:16px 0; padding:22px;}
 .ema-help-text {font-size:17px; line-height:1.8; color:#2b3f58;}
 .ema-rate-row {display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #e8f1fb; padding:12px 2px; font-size:18px;}
 .ema-rate-row strong {font-size:20px; color:#0b66c3;}
 .ema-note {font-size:13px; color:#6c7d8f; text-align:center; margin-top:12px;}
 .ema-path {font-family:Consolas,monospace; font-size:12px; color:#52677e; word-break:break-all;}
-.stButton>button {width:100%; min-height:58px; border-radius:17px; font-size:20px; font-weight:900; border:1px solid rgba(18,104,216,.15); white-space:pre-line;}
+.ema-home-actions {max-width:680px; margin:0 auto;}
+.ema-secondary-grid {display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-top:14px;}
+.ema-image-frame {background:#fff; border:1px solid rgba(18,104,216,.12); border-radius:24px; box-shadow:0 18px 36px rgba(31,86,141,.12); padding:12px; margin:12px auto 18px;}
+.ema-image-frame img {display:block; width:100%; height:auto; border-radius:18px;}
+.ema-demo-tag {display:inline-block; font-size:12px; font-weight:900; letter-spacing:.08em; color:#0b66c3; background:#eaf5ff; border:1px solid #cce8ff; border-radius:999px; padding:5px 12px; margin:0 auto 10px;}
+.ema-center {text-align:center;}
+.stButton>button {width:100%; min-height:64px; border-radius:20px; font-size:20px; font-weight:900; border:1px solid rgba(18,104,216,.15); white-space:pre-line; box-shadow:0 14px 28px rgba(31,86,141,.10);}
 .stButton>button[kind="primary"] {background:linear-gradient(135deg,#20b8ef,#1268d8); border:0; color:#fff;}
-div[data-testid="stFileUploader"] section {border-radius:18px; border-color:#cde3fb;}
-@media (max-width: 520px) {.ema-logo{font-size:52px}.ema-page-title{font-size:29px}.stButton>button{font-size:18px}}
+.stButton>button[kind="secondary"] {background:#fff; color:#15304f;}
+.st-key-home_analyze button {min-height:96px!important; font-size:26px!important; border-radius:26px!important;}
+.st-key-home_help button {min-height:38px!important; font-size:14px!important; box-shadow:none!important; border:0!important; background:transparent!important; color:#6c7d8f!important;}
+.st-key-shutter_button button {width:96px!important; height:96px!important; min-height:96px!important; border-radius:999px!important; margin:6px auto 0!important; font-size:46px!important; line-height:1!important; display:block!important; box-shadow:0 18px 34px rgba(18,104,216,.22)!important;}
+div[data-testid="stFileUploader"] section {border-radius:18px; border-color:#cde3fb; background:#fff;}
+@media (max-width: 620px) {
+  [data-testid="stMainBlockContainer"], .block-container {padding:14px 14px 28px!important;}
+  .ema-logo{font-size:54px}.ema-page-title{font-size:29px}.stButton>button{font-size:18px; min-height:60px;}
+  .ema-secondary-grid {grid-template-columns:1fr;}
+  .st-key-home_analyze button {min-height:84px!important; font-size:22px!important;}
+}
 </style>
 """, unsafe_allow_html=True)
 
@@ -102,11 +122,29 @@ def brand() -> None:
     st.markdown(html, unsafe_allow_html=True)
 
 
-def menu_button(key: str, english: str, japanese: str, target: str) -> None:
-    st.markdown('<div class="ema-menu-card">', unsafe_allow_html=True)
-    if st.button(f"{english}\n{japanese}", key=key, type="primary"):
-        goto(target)
-    st.markdown('</div>', unsafe_allow_html=True)
+def page_title(japanese: str, english: str) -> None:
+    st.markdown(f'<div class="ema-page-title">{japanese}<br><span>{english}</span></div>', unsafe_allow_html=True)
+
+
+@st.cache_data(show_spinner=False)
+def image_data_uri(path_text: str) -> str:
+    path = Path(path_text)
+    suffix = path.suffix.lower().lstrip(".") or "png"
+    mime = "jpeg" if suffix in {"jpg", "jpeg"} else suffix
+    encoded = base64.b64encode(path.read_bytes()).decode("ascii")
+    return f"data:image/{mime};base64,{encoded}"
+
+
+def show_demo_image(path: Path, alt: str) -> None:
+    if not path.exists():
+        st.warning("デモ画像が見つかりません")
+        st.markdown(f'<div class="ema-path">{path}</div>', unsafe_allow_html=True)
+        return
+    src = image_data_uri(str(path))
+    st.markdown(
+        f'<div class="ema-image-frame"><img src="{src}" alt="{alt}"></div>',
+        unsafe_allow_html=True,
+    )
 
 
 def load_master_count() -> int | None:
@@ -209,15 +247,21 @@ screen = st.session_state.screen
 
 if screen == "home":
     brand()
-    menu_button("menu_analyze", T["analyze"], T["analyze_ja"], "analyze")
-    menu_button("menu_review", T["review"], T["review_ja"], "review")
-    menu_button("menu_recording", T["recording"], T["recording_ja"], "recording")
-    if st.button(T["help"]):
+    if st.button(f'{T["analyze"]}\n{T["analyze_ja"]}', key="home_analyze", type="primary"):
+        goto("analyze")
+    col1, col2 = st.columns(2)
+    with col1:
+        if st.button(f'{T["review"]}\n{T["review_ja"]}', key="home_review"):
+            goto("review")
+    with col2:
+        if st.button(f'{T["recording"]}\n{T["recording_ja"]}', key="home_recording"):
+            goto("recording")
+    if st.button(T["help"], key="home_help"):
         goto("usage")
 
 elif screen == "usage":
     back_button("home")
-    st.markdown(f'<div class="ema-page-title">{T["usage_title"]}</div>', unsafe_allow_html=True)
+    page_title(T["usage_title"], "Usage")
     st.markdown('<div class="ema-panel ema-help-text">', unsafe_allow_html=True)
     st.markdown("""
 EMAは、気管挿管時の身体動作を動画から解析するシステムです。
@@ -233,10 +277,46 @@ Reviewでは過去の解析結果を確認します。Recordingは研究・教�
 
 elif screen == "analyze":
     back_button("home")
-    st.markdown(f'<div class="ema-page-title">{T["analysis_title"]}<br><span style="font-size:20px;color:#66788d">Analyze</span></div>', unsafe_allow_html=True)
-    st.markdown('<div class="ema-panel">', unsafe_allow_html=True)
-    if st.button(T["sample"], type="primary"):
-        goto("sample_loading")
+    page_title(T["analysis_title"], "Analyze")
+    if st.button(T["shoot_analyze"], key="shoot_analyze", type="primary"):
+        goto("camera_guide")
+    if st.button(T["upload_analyze"], key="upload_analyze"):
+        goto("upload_analyze")
+    with st.expander("Local sample"):
+        if st.button(T["sample"], key="sample_button"):
+            goto("sample_loading")
+
+elif screen == "camera_guide":
+    back_button("analyze")
+    page_title("撮影ガイド", "Camera Guide")
+    show_demo_image(DEMO_CAMERA_GUIDE_IMAGE, "Camera guide")
+    if st.button("●", key="shutter_button", type="primary"):
+        goto("demo_analyzing")
+
+elif screen == "demo_analyzing":
+    page_title("動作を解析しています…", "Analyzing")
+    progress = st.progress(0)
+    for value in (22, 48, 74, 100):
+        time.sleep(0.18)
+        progress.progress(value)
+    time.sleep(0.25)
+    goto("demo_result")
+
+elif screen == "demo_result":
+    page_title("解析結果", "Analysis Result")
+    st.markdown('<div class="ema-center"><span class="ema-demo-tag">DEMO</span></div>', unsafe_allow_html=True)
+    show_demo_image(DEMO_MARKING_RESULT_IMAGE, "Demo marking result")
+    col1, col2 = st.columns(2)
+    with col1:
+        if st.button("もう一度撮影", key="shoot_again", type="primary"):
+            goto("camera_guide")
+    with col2:
+        if st.button("ホームへ戻る", key="result_home"):
+            goto("home")
+
+elif screen == "upload_analyze":
+    back_button("analyze")
+    page_title(T["select"], "Video Upload")
     uploaded = st.file_uploader(T["select"], type=["mp4", "mov", "mts"])
     if uploaded is not None:
         temp_dir = Path(tempfile.gettempdir()) / "ema_legend_analyzer_uploads"
@@ -245,13 +325,12 @@ elif screen == "analyze":
         uploaded_path.write_bytes(uploaded.getbuffer())
         st.session_state.uploaded_video_path = str(uploaded_path)
         st.video(str(uploaded_path))
-        if st.button(T["start_marking"]):
+        if st.button(T["start_marking"], key="start_uploaded_marking", type="primary"):
             goto("custom_analyzing")
-    st.markdown('</div>', unsafe_allow_html=True)
 
 elif screen == "sample_loading":
     back_button("analyze")
-    st.markdown(f'<div class="ema-page-title">{T["loading"]}</div>', unsafe_allow_html=True)
+    page_title(T["loading"], "Loading")
     try:
         st.session_state.pose_result = load_sample_result()
     except FileNotFoundError:
@@ -264,8 +343,8 @@ elif screen == "sample_loading":
     goto("marking_result")
 
 elif screen == "custom_analyzing":
-    back_button("analyze")
-    st.markdown(f'<div class="ema-page-title">{T["marking_now"]}</div>', unsafe_allow_html=True)
+    back_button("upload_analyze")
+    page_title(T["marking_now"], "Marking")
     path = st.session_state.get("uploaded_video_path", "")
     if not path or not Path(path).exists():
         st.warning("動画が見つかりません")
@@ -303,7 +382,7 @@ elif screen == "custom_analyzing":
 
 elif screen == "marking_result":
     back_button("analyze")
-    st.markdown(f'<div class="ema-page-title">{T["marking_result"]}</div>', unsafe_allow_html=True)
+    page_title(T["marking_result"], "Marking Result")
     result = st.session_state.get("pose_result")
     if result is None:
         st.warning("結果がありません")
@@ -327,14 +406,14 @@ elif screen == "marking_result":
 
 elif screen == "review":
     back_button("home")
-    st.markdown(f'<div class="ema-page-title">{T["review"]}<br><span style="font-size:20px;color:#66788d">{T["review_ja"]}</span></div>', unsafe_allow_html=True)
+    page_title(T["review_ja"], T["review"])
     st.markdown('<div class="ema-panel">', unsafe_allow_html=True)
     st.info("Review機能は開発中です")
     st.markdown('</div>', unsafe_allow_html=True)
 
 elif screen == "recording":
     back_button("home")
-    st.markdown(f'<div class="ema-page-title">{T["recording"]}<br><span style="font-size:20px;color:#66788d">{T["recording_ja"]}</span></div>', unsafe_allow_html=True)
+    page_title(T["recording_ja"], T["recording"])
     st.markdown('<div class="ema-panel">', unsafe_allow_html=True)
     st.info("Recording機能は開発中です")
     st.markdown('</div>', unsafe_allow_html=True)
