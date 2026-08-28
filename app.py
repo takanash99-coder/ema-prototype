@@ -71,6 +71,7 @@ header[data-testid="stHeader"], [data-testid="stToolbar"], [data-testid="stDecor
 .stApp {background:radial-gradient(circle at 50% 0%, rgba(51,170,245,.20), transparent 34%), linear-gradient(180deg,#fafdff 0%,#edf7ff 58%,#e7f3ff 100%); color:#132238;}
 .stApp::after {content:""; position:fixed; left:0; right:0; bottom:0; height:180px; pointer-events:none; opacity:.55; background:repeating-linear-gradient(160deg, transparent 0 28px, rgba(22,116,210,.08) 29px 31px, transparent 32px 58px); mask-image:linear-gradient(transparent, #000);}
 .ema-brand {text-align:center; padding:18px 0 24px;}
+.ema-brand-icon {display:block; width:min(168px, 34vw); height:auto; margin:0 auto 14px; border-radius:28px; box-shadow:0 18px 42px rgba(12,40,86,.18);}
 .ema-logo {font-size:76px; line-height:1; font-weight:950; letter-spacing:0; color:#0b66c3; margin:0; text-shadow:0 10px 24px rgba(11,102,195,.13);}
 .ema-name {font-size:24px; font-weight:900; margin:10px 0 5px; color:#10233d;}
 .ema-sub {font-size:14px; font-weight:760; color:#64758b; margin:2px 0;}
@@ -108,11 +109,12 @@ header[data-testid="stHeader"], [data-testid="stToolbar"], [data-testid="stDecor
 .st-key-home_help button {min-height:38px!important; font-size:14px!important; box-shadow:none!important; border:0!important; background:transparent!important; color:#6c7d8f!important;}
 .st-key-shutter_button button {width:96px!important; height:96px!important; min-height:96px!important; border-radius:999px!important; margin:6px auto 0!important; font-size:46px!important; line-height:1!important; display:block!important; box-shadow:0 18px 34px rgba(18,104,216,.22)!important;}
 .st-key-motion_rec_start button {width:138px!important; height:138px!important; min-height:138px!important; border-radius:999px!important; margin:10px auto 18px!important; font-size:25px!important; line-height:1.15!important; display:block!important; background:linear-gradient(135deg,#ef4444,#b91c1c)!important;}
+.st-key-coaching_start button {max-width:520px!important; min-height:82px!important; margin:0 auto 12px!important; display:block!important; background:linear-gradient(135deg,#25c7f3,#1268d8)!important; color:#fff!important; border:0!important; text-align:center!important;}
 .st-key-motion_recording_home button, .st-key-result_home button {box-shadow:none!important;}
 div[data-testid="stFileUploader"] section {border-radius:18px; border-color:#cde3fb; background:#fff;}
 @media (max-width: 620px) {
   [data-testid="stMainBlockContainer"], .block-container {padding:16px 16px 30px!important;}
-  .ema-logo{font-size:56px}.ema-page-title{font-size:30px}.stButton>button{font-size:18px; min-height:60px;}
+  .ema-logo{font-size:56px}.ema-brand-icon{width:min(138px, 42vw); border-radius:24px}.ema-page-title{font-size:30px}.stButton>button{font-size:18px; min-height:60px;}
   .ema-purpose{font-size:17px; line-height:1.65; margin-bottom:20px;}
   .ema-flow{grid-template-columns:1fr; gap:8px; margin-bottom:18px;}
   .ema-flow-arrow{display:none;}
@@ -136,10 +138,17 @@ def back_button(target: str) -> None:
 
 
 def brand() -> None:
+    if EMA_ICON_IMAGE.exists():
+        encoded = base64.b64encode(EMA_ICON_IMAGE.read_bytes()).decode("ascii")
+        brand_mark = f'<img class="ema-brand-icon" src="data:image/png;base64,{encoded}" alt="EMA Expert Motion Analyzer">'
+        brand_name = ""
+    else:
+        brand_mark = f'<div class="ema-logo">{T["ema"]}</div>'
+        brand_name = f'<div class="ema-name">{T["name"]}</div>'
     html = (
         '<div class="ema-brand">'
-        f'<div class="ema-logo">{T["ema"]}</div>'
-        f'<div class="ema-name">{T["name"]}</div>'
+        f'{brand_mark}'
+        f'{brand_name}'
         f'<div class="ema-sub">{T["target"]}</div>'
         f'<div class="ema-sub">{T["system"]}</div>'
         '</div>'
@@ -373,7 +382,16 @@ elif screen == "motion_recording":
     st.markdown('<div class="ema-purpose">撮影位置を変えずに、気管挿管を実施してください</div>', unsafe_allow_html=True)
     if st.button("● REC\n撮影開始", key="motion_rec_start", type="primary"):
         st.info("動画撮影機能はPrototypeでは準備中です")
+    if st.button("コーチング開始\n撮影した動画をAIコーチングで解析します", key="coaching_start", type="primary"):
+        goto("ai_coaching")
     if st.button("ホームへ", key="motion_recording_home"):
+        goto("home")
+
+elif screen == "ai_coaching":
+    page_title("AIコーチング", "AI Coaching")
+    st.markdown('<div class="ema-center"><span class="ema-demo-tag">Prototype</span></div>', unsafe_allow_html=True)
+    st.markdown('<div class="ema-panel ema-help-text">撮影した動作を解析し、<br>熟練者の動作特性と比較してコーチングを行います。<br><br><strong>AIコーチング機能は現在開発中です。</strong></div>', unsafe_allow_html=True)
+    if st.button("ホームへ戻る", key="ai_coaching_home", type="primary"):
         goto("home")
 
 elif screen == "upload_analyze":
