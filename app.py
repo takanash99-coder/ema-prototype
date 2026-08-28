@@ -17,6 +17,7 @@ from result_writer import write_log
 EMA_ICON_IMAGE = ASSETS_DIR / "ema_icon.png"
 WEB_APP_NAME = "EMA"
 STATIC_ICON_BASE = "/app/static"
+PUBLIC_ICON_BASE = "https://raw.githubusercontent.com/takanash99-coder/ema-prototype/main/static"
 st.set_page_config(page_title=WEB_APP_NAME, page_icon=str(EMA_ICON_IMAGE), layout="centered")
 
 DEMO_CAMERA_GUIDE_IMAGE = ASSETS_DIR / "demo_camera_guide_2.png"
@@ -169,6 +170,7 @@ def mobile_icon_tags() -> None:
       const doc = window.parent.document;
       const origin = window.parent.location.origin;
       const iconBase = `${{origin}}{STATIC_ICON_BASE}`;
+      const publicIconBase = '{PUBLIC_ICON_BASE}';
       const ensureLink = (rel, href, attrs = {{}}) => {{
         let link = doc.head.querySelector(`link[rel="${{rel}}"]`);
         if (!link) {{
@@ -189,9 +191,9 @@ def mobile_icon_tags() -> None:
         meta.setAttribute('content', content);
       }};
       doc.title = '{WEB_APP_NAME}';
-      ensureLink('icon', `${{iconBase}}/favicon.ico`, {{ sizes: 'any' }});
-      ensureLink('shortcut icon', `${{iconBase}}/favicon.ico`);
-      ensureLink('apple-touch-icon', `${{iconBase}}/apple-touch-icon.png`, {{ sizes: '180x180' }});
+      ensureLink('icon', `${{publicIconBase}}/favicon.ico`, {{ sizes: 'any' }});
+      ensureLink('shortcut icon', `${{publicIconBase}}/favicon.ico`);
+      ensureLink('apple-touch-icon', `${{publicIconBase}}/apple-touch-icon.png`, {{ sizes: '180x180' }});
       ensureLink('manifest', `${{iconBase}}/site.webmanifest`);
       ensureMeta('apple-mobile-web-app-title', '{WEB_APP_NAME}');
       ensureMeta('application-name', '{WEB_APP_NAME}');
