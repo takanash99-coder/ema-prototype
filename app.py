@@ -66,13 +66,14 @@ T = {
 st.markdown("""
 <style>
 header[data-testid="stHeader"], [data-testid="stToolbar"], [data-testid="stDecoration"], #MainMenu, footer {display:none!important;}
-[data-testid="stMainBlockContainer"], .block-container {padding:18px 18px 34px!important; max-width:860px!important;}
-.stApp {background:linear-gradient(180deg,#f7fbff 0%,#edf6ff 100%); color:#132238;}
-.ema-brand {text-align:center; padding:12px 0 24px;}
-.ema-logo {font-size:70px; line-height:1; font-weight:950; letter-spacing:0; color:#0b66c3; margin:0;}
-.ema-name {font-size:23px; font-weight:850; margin:8px 0 4px; color:#172a46;}
-.ema-sub {font-size:14px; font-weight:750; color:#64758b; margin:2px 0;}
-.ema-page-title {font-size:34px; font-weight:950; text-align:center; margin:10px 0 22px; color:#10233d; line-height:1.25;}
+[data-testid="stMainBlockContainer"], .block-container {padding:22px 20px 38px!important; max-width:820px!important;}
+.stApp {background:radial-gradient(circle at 50% 0%, rgba(51,170,245,.20), transparent 34%), linear-gradient(180deg,#fafdff 0%,#edf7ff 58%,#e7f3ff 100%); color:#132238;}
+.stApp::after {content:""; position:fixed; left:0; right:0; bottom:0; height:180px; pointer-events:none; opacity:.55; background:repeating-linear-gradient(160deg, transparent 0 28px, rgba(22,116,210,.08) 29px 31px, transparent 32px 58px); mask-image:linear-gradient(transparent, #000);}
+.ema-brand {text-align:center; padding:18px 0 24px;}
+.ema-logo {font-size:76px; line-height:1; font-weight:950; letter-spacing:0; color:#0b66c3; margin:0; text-shadow:0 10px 24px rgba(11,102,195,.13);}
+.ema-name {font-size:24px; font-weight:900; margin:10px 0 5px; color:#10233d;}
+.ema-sub {font-size:14px; font-weight:760; color:#64758b; margin:2px 0;}
+.ema-page-title {font-size:36px; font-weight:950; text-align:center; margin:12px 0 22px; color:#10233d; line-height:1.24;}
 .ema-page-title span {font-size:20px; color:#66788d;}
 .ema-panel {background:#fff; border:1px solid rgba(18,104,216,.12); border-radius:22px; box-shadow:0 16px 34px rgba(31,86,141,.10); margin:16px 0; padding:22px;}
 .ema-help-text {font-size:17px; line-height:1.8; color:#2b3f58;}
@@ -80,28 +81,43 @@ header[data-testid="stHeader"], [data-testid="stToolbar"], [data-testid="stDecor
 .ema-rate-row strong {font-size:20px; color:#0b66c3;}
 .ema-note {font-size:13px; color:#6c7d8f; text-align:center; margin-top:12px;}
 .ema-path {font-family:Consolas,monospace; font-size:12px; color:#52677e; word-break:break-all;}
-.ema-purpose {max-width:620px; margin:0 auto 24px; text-align:center; font-size:20px; line-height:1.7; font-weight:850; color:#1b385b;}
+.ema-purpose {max-width:640px; margin:0 auto 26px; text-align:center; font-size:20px; line-height:1.7; font-weight:850; color:#1b385b;}
+.ema-flow {display:grid; grid-template-columns:1fr auto 1fr auto 1fr; align-items:stretch; gap:10px; margin:2px auto 22px; max-width:760px;}
+.ema-flow-step {background:rgba(255,255,255,.78); border:1px solid rgba(18,104,216,.13); border-radius:18px; padding:15px 12px; text-align:center; box-shadow:0 12px 26px rgba(31,86,141,.08);}
+.ema-flow-number {font-size:13px; font-weight:950; color:#0b66c3; margin-bottom:3px;}
+.ema-flow-title {font-size:18px; font-weight:950; color:#132238; margin-bottom:4px;}
+.ema-flow-text {font-size:12px; font-weight:760; line-height:1.45; color:#64758b;}
+.ema-flow-arrow {display:flex; align-items:center; justify-content:center; font-size:24px; font-weight:950; color:#74b6ec;}
 .ema-image-frame {background:#fff; border:1px solid rgba(18,104,216,.12); border-radius:24px; box-shadow:0 18px 36px rgba(31,86,141,.12); padding:12px; margin:12px auto 18px;}
 .ema-image-frame img {display:block; width:100%; height:auto; border-radius:18px;}
 .ema-demo-tag {display:inline-block; font-size:12px; font-weight:900; letter-spacing:.08em; color:#0b66c3; background:#eaf5ff; border:1px solid #cce8ff; border-radius:999px; padding:5px 12px; margin:0 auto 10px;}
 .ema-center {text-align:center;}
-.stButton>button {width:100%; min-height:64px; border-radius:20px; font-size:20px; font-weight:900; border:1px solid rgba(18,104,216,.15); white-space:pre-line; box-shadow:0 14px 28px rgba(31,86,141,.10);}
-.stButton>button[kind="primary"] {background:linear-gradient(135deg,#20b8ef,#1268d8); border:0; color:#fff;}
+.stButton>button {width:100%; min-height:66px; border-radius:22px; font-size:20px; font-weight:900; border:1px solid rgba(18,104,216,.13); white-space:pre-line; box-shadow:0 16px 30px rgba(31,86,141,.11); transition:transform .14s ease, box-shadow .14s ease, border-color .14s ease;}
+.stButton>button:hover {transform:translateY(-1px); box-shadow:0 20px 34px rgba(31,86,141,.16); border-color:rgba(18,104,216,.24);}
+.stButton>button[kind="primary"] {background:linear-gradient(135deg,#25c7f3,#1268d8); border:0; color:#fff;}
 .stButton>button[kind="secondary"] {background:#fff; color:#15304f;}
 .st-key-home_analyze button, .st-key-home_review button, .st-key-home_recording button,
-.st-key-shoot_analyze button, .st-key-upload_analyze button, .st-key-analysis_history button {min-height:92px!important; font-size:22px!important; border-radius:24px!important;}
-.st-key-home_analyze button {min-height:104px!important; font-size:24px!important;}
+.st-key-shoot_analyze button, .st-key-upload_analyze button, .st-key-analysis_history button {min-height:104px!important; font-size:21px!important; border-radius:25px!important; text-align:left!important; padding:18px 24px!important;}
+.st-key-home_analyze button {min-height:110px!important; background:linear-gradient(135deg,#21c8f4,#1270de)!important; color:#fff!important; border:0!important;}
+.st-key-home_review button {background:linear-gradient(135deg,#0f4e96,#0b2f66)!important; color:#fff!important; border:0!important;}
+.st-key-home_recording button {background:linear-gradient(135deg,#1678de,#6d54d8)!important; color:#fff!important; border:0!important;}
+.st-key-shoot_analyze button {background:linear-gradient(135deg,#25c7f3,#1268d8)!important; color:#fff!important; border:0!important;}
+.st-key-upload_analyze button {background:#fff!important; color:#15304f!important;}
+.st-key-analysis_history button {background:linear-gradient(135deg,#f7fbff,#eef6ff)!important; color:#15304f!important;}
 .st-key-home_help button {min-height:38px!important; font-size:14px!important; box-shadow:none!important; border:0!important; background:transparent!important; color:#6c7d8f!important;}
 .st-key-shutter_button button {width:96px!important; height:96px!important; min-height:96px!important; border-radius:999px!important; margin:6px auto 0!important; font-size:46px!important; line-height:1!important; display:block!important; box-shadow:0 18px 34px rgba(18,104,216,.22)!important;}
 .st-key-motion_rec_start button {width:138px!important; height:138px!important; min-height:138px!important; border-radius:999px!important; margin:10px auto 18px!important; font-size:25px!important; line-height:1.15!important; display:block!important; background:linear-gradient(135deg,#ef4444,#b91c1c)!important;}
 .st-key-motion_recording_home button, .st-key-result_home button {box-shadow:none!important;}
 div[data-testid="stFileUploader"] section {border-radius:18px; border-color:#cde3fb; background:#fff;}
 @media (max-width: 620px) {
-  [data-testid="stMainBlockContainer"], .block-container {padding:14px 14px 28px!important;}
-  .ema-logo{font-size:54px}.ema-page-title{font-size:29px}.stButton>button{font-size:18px; min-height:60px;}
-  .ema-purpose{font-size:17px; line-height:1.65; margin-bottom:18px;}
+  [data-testid="stMainBlockContainer"], .block-container {padding:16px 16px 30px!important;}
+  .ema-logo{font-size:56px}.ema-page-title{font-size:30px}.stButton>button{font-size:18px; min-height:60px;}
+  .ema-purpose{font-size:17px; line-height:1.65; margin-bottom:20px;}
+  .ema-flow{grid-template-columns:1fr; gap:8px; margin-bottom:18px;}
+  .ema-flow-arrow{display:none;}
+  .ema-flow-step{padding:13px 12px;}
   .st-key-home_analyze button, .st-key-home_review button, .st-key-home_recording button,
-  .st-key-shoot_analyze button, .st-key-upload_analyze button, .st-key-analysis_history button {min-height:82px!important; font-size:19px!important;}
+  .st-key-shoot_analyze button, .st-key-upload_analyze button, .st-key-analysis_history button {min-height:88px!important; font-size:18px!important; padding:16px 18px!important;}
   .st-key-motion_rec_start button {width:120px!important; height:120px!important; min-height:120px!important;}
 }
 </style>
@@ -284,6 +300,15 @@ Reviewでは過去の解析結果を確認します。Recordingは研究・教�
 elif screen == "analyze":
     back_button("home")
     page_title(T["analysis_title"], "Analyze")
+    st.markdown("""
+    <div class="ema-flow">
+      <div class="ema-flow-step"><div class="ema-flow-number">01</div><div class="ema-flow-title">撮影</div><div class="ema-flow-text">位置を合わせて静止画を撮影</div></div>
+      <div class="ema-flow-arrow">→</div>
+      <div class="ema-flow-step"><div class="ema-flow-number">02</div><div class="ema-flow-title">確認</div><div class="ema-flow-text">マーキング結果を確認</div></div>
+      <div class="ema-flow-arrow">→</div>
+      <div class="ema-flow-step"><div class="ema-flow-number">03</div><div class="ema-flow-title">解析</div><div class="ema-flow-text">動画撮影して動作を解析</div></div>
+    </div>
+    """, unsafe_allow_html=True)
     if st.button(f'{T["shoot_analyze"]}\nその場で撮影して解析する', key="shoot_analyze", type="primary"):
         goto("camera_guide")
     if st.button(f'{T["upload_analyze"]}\n保存済みの動画を使用する', key="upload_analyze"):
