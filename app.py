@@ -15,7 +15,9 @@ from master_loader import MasterLoadError, load_master
 from result_writer import write_log
 
 EMA_ICON_IMAGE = ASSETS_DIR / "ema_icon.png"
-st.set_page_config(page_title="EMA | Expert Motion Analyzer", page_icon=str(EMA_ICON_IMAGE), layout="centered")
+WEB_APP_NAME = "EMA"
+STATIC_ICON_BASE = "/app/static"
+st.set_page_config(page_title=WEB_APP_NAME, page_icon=str(EMA_ICON_IMAGE), layout="centered")
 
 DEMO_CAMERA_GUIDE_IMAGE = ASSETS_DIR / "demo_camera_guide_2.png"
 DEMO_MARKING_RESULT_IMAGE = ASSETS_DIR / "demo_marking_result.png"
@@ -161,15 +163,45 @@ def page_title(japanese: str, english: str) -> None:
 
 
 def mobile_icon_tags() -> None:
-    if not EMA_ICON_IMAGE.exists():
-        return
-    encoded = base64.b64encode(EMA_ICON_IMAGE.read_bytes()).decode("ascii")
-    icon_markup = (
-        f'<link rel="apple-touch-icon" href="data:image/png;base64,{encoded}">' 
-        '<meta name="apple-mobile-web-app-title" content="EMA Prototype">'
-        '<meta name="application-name" content="EMA Prototype">'
-    )
-    st.markdown(icon_markup, unsafe_allow_html=True)
+    head_markup = f"""
+    <script>
+    (() => {{
+      const doc = window.parent.document;
+      const origin = window.parent.location.origin;
+      const iconBase = `${{origin}}{STATIC_ICON_BASE}`;
+      const ensureLink = (rel, href, attrs = {{}}) => {{
+        let link = doc.head.querySelector(`link[rel="${{rel}}"]`);
+        if (!link) {{
+          link = doc.createElement('link');
+          link.setAttribute('rel', rel);
+          doc.head.appendChild(link);
+        }}
+        link.setAttribute('href', href);
+        Object.entries(attrs).forEach(([key, value]) => link.setAttribute(key, value));
+      }};
+      const ensureMeta = (name, content) => {{
+        let meta = doc.head.querySelector(`meta[name="${{name}}"]`);
+        if (!meta) {{
+          meta = doc.createElement('meta');
+          meta.setAttribute('name', name);
+          doc.head.appendChild(meta);
+        }}
+        meta.setAttribute('content', content);
+      }};
+      doc.title = '{WEB_APP_NAME}';
+      ensureLink('icon', `${{iconBase}}/favicon.ico`, {{ sizes: 'any' }});
+      ensureLink('shortcut icon', `${{iconBase}}/favicon.ico`);
+      ensureLink('apple-touch-icon', `${{iconBase}}/apple-touch-icon.png`, {{ sizes: '180x180' }});
+      ensureLink('manifest', `${{iconBase}}/site.webmanifest`);
+      ensureMeta('apple-mobile-web-app-title', '{WEB_APP_NAME}');
+      ensureMeta('application-name', '{WEB_APP_NAME}');
+      ensureMeta('mobile-web-app-capable', 'yes');
+      ensureMeta('apple-mobile-web-app-capable', 'yes');
+      ensureMeta('theme-color', '#1268d8');
+    }})();
+    </script>
+    """
+    components.html(head_markup, height=0, width=0)
 
 
 mobile_icon_tags()
