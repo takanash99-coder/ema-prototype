@@ -190,7 +190,14 @@ def mobile_icon_tags() -> None:
         }}
         meta.setAttribute('content', content);
       }};
-      doc.title = '{WEB_APP_NAME}';
+      const setEmaTitle = () => {{
+        if (doc.title !== '{WEB_APP_NAME}') {{
+          doc.title = '{WEB_APP_NAME}';
+        }}
+      }};
+      setEmaTitle();
+      const titleElement = doc.head.querySelector('title') || doc.head.appendChild(doc.createElement('title'));
+      titleElement.textContent = '{WEB_APP_NAME}';
       ensureLink('icon', `${{publicIconBase}}/favicon.ico`, {{ sizes: 'any' }});
       ensureLink('shortcut icon', `${{publicIconBase}}/favicon.ico`);
       ensureLink('apple-touch-icon', `${{publicIconBase}}/apple-touch-icon.png`, {{ sizes: '180x180' }});
@@ -199,7 +206,11 @@ def mobile_icon_tags() -> None:
       ensureMeta('application-name', '{WEB_APP_NAME}');
       ensureMeta('mobile-web-app-capable', 'yes');
       ensureMeta('apple-mobile-web-app-capable', 'yes');
+      ensureMeta('apple-mobile-web-app-status-bar-style', 'default');
       ensureMeta('theme-color', '#1268d8');
+      window.setTimeout(setEmaTitle, 250);
+      window.setTimeout(setEmaTitle, 1000);
+      window.setTimeout(setEmaTitle, 2500);
     }})();
     </script>
     """
