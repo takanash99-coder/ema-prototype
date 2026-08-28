@@ -194,7 +194,7 @@ def mobile_icon_tags() -> None:
       ensureLink('icon', `${{publicIconBase}}/favicon.ico`, {{ sizes: 'any' }});
       ensureLink('shortcut icon', `${{publicIconBase}}/favicon.ico`);
       ensureLink('apple-touch-icon', `${{publicIconBase}}/apple-touch-icon.png`, {{ sizes: '180x180' }});
-      ensureLink('manifest', `${{iconBase}}/site.webmanifest`);
+      ensureLink('manifest', `${{iconBase}}/manifest.json`);
       ensureMeta('apple-mobile-web-app-title', '{WEB_APP_NAME}');
       ensureMeta('application-name', '{WEB_APP_NAME}');
       ensureMeta('mobile-web-app-capable', 'yes');
