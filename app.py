@@ -14,7 +14,8 @@ from config import ASSETS_DIR, MASTER_FILE, RESULTS_DIR, SAMPLE_MARKED_VIDEO, SA
 from master_loader import MasterLoadError, load_master
 from result_writer import write_log
 
-st.set_page_config(page_title="EMA", layout="centered")
+EMA_ICON_IMAGE = ASSETS_DIR / "ema_icon.png"
+st.set_page_config(page_title="EMA | Expert Motion Analyzer", page_icon=str(EMA_ICON_IMAGE), layout="centered")
 
 DEMO_CAMERA_GUIDE_IMAGE = ASSETS_DIR / "demo_camera_guide_2.png"
 DEMO_MARKING_RESULT_IMAGE = ASSETS_DIR / "demo_marking_result.png"
@@ -66,7 +67,7 @@ T = {
 st.markdown("""
 <style>
 header[data-testid="stHeader"], [data-testid="stToolbar"], [data-testid="stDecoration"], #MainMenu, footer {display:none!important;}
-[data-testid="stMainBlockContainer"], .block-container {padding:22px 20px 38px!important; max-width:820px!important;}
+[data-testid="stMainBlockContainer"], .block-container {padding:22px 20px 38px!important; max-width:980px!important;}
 .stApp {background:radial-gradient(circle at 50% 0%, rgba(51,170,245,.20), transparent 34%), linear-gradient(180deg,#fafdff 0%,#edf7ff 58%,#e7f3ff 100%); color:#132238;}
 .stApp::after {content:""; position:fixed; left:0; right:0; bottom:0; height:180px; pointer-events:none; opacity:.55; background:repeating-linear-gradient(160deg, transparent 0 28px, rgba(22,116,210,.08) 29px 31px, transparent 32px 58px); mask-image:linear-gradient(transparent, #000);}
 .ema-brand {text-align:center; padding:18px 0 24px;}
@@ -97,8 +98,8 @@ header[data-testid="stHeader"], [data-testid="stToolbar"], [data-testid="stDecor
 .stButton>button[kind="primary"] {background:linear-gradient(135deg,#25c7f3,#1268d8); border:0; color:#fff;}
 .stButton>button[kind="secondary"] {background:#fff; color:#15304f;}
 .st-key-home_analyze button, .st-key-home_review button, .st-key-home_recording button,
-.st-key-shoot_analyze button, .st-key-upload_analyze button, .st-key-analysis_history button {min-height:104px!important; font-size:21px!important; border-radius:25px!important; text-align:left!important; padding:18px 24px!important;}
-.st-key-home_analyze button {min-height:110px!important; background:linear-gradient(135deg,#21c8f4,#1270de)!important; color:#fff!important; border:0!important;}
+.st-key-shoot_analyze button, .st-key-upload_analyze button, .st-key-analysis_history button {min-height:154px!important; font-size:19px!important; border-radius:25px!important; text-align:left!important; padding:20px 20px!important;}
+.st-key-home_analyze button {background:linear-gradient(135deg,#21c8f4,#1270de)!important; color:#fff!important; border:0!important;}
 .st-key-home_review button {background:linear-gradient(135deg,#0f4e96,#0b2f66)!important; color:#fff!important; border:0!important;}
 .st-key-home_recording button {background:linear-gradient(135deg,#1678de,#6d54d8)!important; color:#fff!important; border:0!important;}
 .st-key-shoot_analyze button {background:linear-gradient(135deg,#25c7f3,#1268d8)!important; color:#fff!important; border:0!important;}
@@ -117,7 +118,7 @@ div[data-testid="stFileUploader"] section {border-radius:18px; border-color:#cde
   .ema-flow-arrow{display:none;}
   .ema-flow-step{padding:13px 12px;}
   .st-key-home_analyze button, .st-key-home_review button, .st-key-home_recording button,
-  .st-key-shoot_analyze button, .st-key-upload_analyze button, .st-key-analysis_history button {min-height:88px!important; font-size:18px!important; padding:16px 18px!important;}
+  .st-key-shoot_analyze button, .st-key-upload_analyze button, .st-key-analysis_history button {min-height:92px!important; font-size:18px!important; padding:16px 18px!important;}
   .st-key-motion_rec_start button {width:120px!important; height:120px!important; min-height:120px!important;}
 }
 </style>
@@ -148,6 +149,21 @@ def brand() -> None:
 
 def page_title(japanese: str, english: str) -> None:
     st.markdown(f'<div class="ema-page-title">{japanese}<br><span>{english}</span></div>', unsafe_allow_html=True)
+
+
+def mobile_icon_tags() -> None:
+    if not EMA_ICON_IMAGE.exists():
+        return
+    encoded = base64.b64encode(EMA_ICON_IMAGE.read_bytes()).decode("ascii")
+    icon_markup = (
+        f'<link rel="apple-touch-icon" href="data:image/png;base64,{encoded}">' 
+        '<meta name="apple-mobile-web-app-title" content="EMA Prototype">'
+        '<meta name="application-name" content="EMA Prototype">'
+    )
+    st.markdown(icon_markup, unsafe_allow_html=True)
+
+
+mobile_icon_tags()
 
 
 @st.cache_data(show_spinner=False)
@@ -272,12 +288,16 @@ screen = st.session_state.screen
 if screen == "home":
     brand()
     st.markdown('<div class="ema-purpose">気管挿管の動作を可視化し、<br>熟練者の動きから学ぶモーションコーチングAI</div>', unsafe_allow_html=True)
-    if st.button(f'{T["analyze"]}\n{T["analyze_ja"]}\n撮影した動作をAIで解析', key="home_analyze", type="primary"):
-        goto("analyze")
-    if st.button(f'{T["review"]}\n{T["review_ja"]}\n解析結果・コーチングを確認', key="home_review"):
-        goto("review")
-    if st.button(f'{T["recording"]}\n{T["recording_ja"]}\n技能データを記録', key="home_recording"):
-        goto("recording")
+    home_cols = st.columns(3, gap="medium")
+    with home_cols[0]:
+        if st.button(f'{T["analyze"]}\n{T["analyze_ja"]}\n撮影した動作をAIで解析', key="home_analyze", type="primary"):
+            goto("analyze")
+    with home_cols[1]:
+        if st.button(f'{T["review"]}\n{T["review_ja"]}\n解析結果・コーチングを確認', key="home_review"):
+            goto("review")
+    with home_cols[2]:
+        if st.button(f'{T["recording"]}\n{T["recording_ja"]}\n技能データを記録', key="home_recording"):
+            goto("recording")
     if st.button(T["help"], key="home_help"):
         goto("usage")
 
@@ -309,12 +329,16 @@ elif screen == "analyze":
       <div class="ema-flow-step"><div class="ema-flow-number">03</div><div class="ema-flow-title">解析</div><div class="ema-flow-text">動画撮影して動作を解析</div></div>
     </div>
     """, unsafe_allow_html=True)
-    if st.button(f'{T["shoot_analyze"]}\nその場で撮影して解析する', key="shoot_analyze", type="primary"):
-        goto("camera_guide")
-    if st.button(f'{T["upload_analyze"]}\n保存済みの動画を使用する', key="upload_analyze"):
-        goto("upload_analyze")
-    if st.button(f'{T["history"]}\n{T["history_sub"]}', key="analysis_history"):
-        goto("review")
+    analyze_cols = st.columns(3, gap="medium")
+    with analyze_cols[0]:
+        if st.button(f'{T["shoot_analyze"]}\nその場で撮影して解析する', key="shoot_analyze", type="primary"):
+            goto("camera_guide")
+    with analyze_cols[1]:
+        if st.button(f'{T["upload_analyze"]}\n保存済みの動画を使用する', key="upload_analyze"):
+            goto("upload_analyze")
+    with analyze_cols[2]:
+        if st.button(f'{T["history"]}\n{T["history_sub"]}', key="analysis_history"):
+            goto("review")
 
 elif screen == "camera_guide":
     back_button("analyze")
